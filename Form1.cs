@@ -25,7 +25,8 @@ namespace FfmpegUtil
         int sourceDimX = 3000;
         int sourceDimY = 2000;
         int resX, resY;
-        string fileNameResPostfix, fileNameScaleCropPostfix;
+        string fileNameResPostfix, fileNameScaleCropPostfix, fileNameZooming;
+
 
         public Form1(string[] args)
         {
@@ -280,6 +281,7 @@ namespace FfmpegUtil
                     command += ",unsharp=3:3:1.5";
                 }
             }
+
             if (videoFiltersUsed) command += "\"";
             command += " -s " + resX.ToString() + "x" + resY.ToString();
             command += " -vcodec libx264";
@@ -294,6 +296,19 @@ namespace FfmpegUtil
             Process Process;
 
             String runMethod = checkBoxAutoClose.Checked ? "/C " : "/K ";
+            ProcessInfo = new ProcessStartInfo("cmd.exe", runMethod + Command);
+            ProcessInfo.CreateNoWindow = false;
+            ProcessInfo.UseShellExecute = false;
+
+            Process = Process.Start(ProcessInfo);
+        }
+
+        public void ExecuteCommandZoom(string Command)
+        {
+            ProcessStartInfo ProcessInfo;
+            Process Process;
+
+            String runMethod = checkBoxAutoCloseZoom.Checked ? "/C " : "/K ";
             ProcessInfo = new ProcessStartInfo("cmd.exe", runMethod + Command);
             ProcessInfo.CreateNoWindow = false;
             ProcessInfo.UseShellExecute = false;
@@ -323,9 +338,62 @@ namespace FfmpegUtil
             }
         }
 
+        private void buttonGenerateFilm_Click(object sender, EventArgs e)
+        {
+            string command = "ffmpeg -i ";
+            command += "\"" + fileNameZooming + "\"";
+            command += " -vf \"zoompan=z='1+(" + zoomZ.Text + "*in/" + framesZoom.Text + ")'";
+            command += ":x='" + zoomX.Text + "*in/" + framesZoom.Text + "'";
+            command += ":y='" + zoomY.Text + "*in/" + framesZoom.Text + "':d=1\"";
+            command += " " + textBoxOutputFileName.Text +".mp4";
+            logMessage(command);
+            ExecuteCommandZoom(command);
+            textBoxOutputZoom.Text = "";
+            textBoxOutputZoom.Text = command;
+        }
+
+        private void buttonLoadFilm_Click(object sender, EventArgs e)
+        {
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                resetProject(folderBrowserDialog1.SelectedPath);
+            }
+        }
+
+        private void framesZoom_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonLoadFilm_Click_1(object sender, EventArgs e)
+        {
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                InitialDirectory = @"C:\",
+                Title = "Browse Movie",
+
+                CheckFileExists = true,
+                CheckPathExists = true,
+                RestoreDirectory = true,
+
+                ReadOnlyChecked = true,
+                ShowReadOnly = true
+            };
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                labelFilmLoaded.Text = openFileDialog1.FileName;
+                fileNameZooming = openFileDialog1.FileName;
+            }
+
+        }
+
         private void buttonLoadDirectory_Click(object sender, EventArgs e)
         {
             DialogResult result = folderBrowserDialog1.ShowDialog();
+            
             if(result == DialogResult.OK)
             {
                 resetProject(folderBrowserDialog1.SelectedPath);
