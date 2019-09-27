@@ -104,12 +104,13 @@ namespace FfmpegUtil
         public FileInfo decodeFile(string file)
         {
             FileInfo currentFileInfo = new FileInfo();
-            if (Path.GetExtension(file) == ".jpg")
+            if (Path.GetExtension(file) == ".JPG")
             {
                 currentFileInfo.ValidFile = true;
                 currentFileInfo.FileName = Path.GetFileName(file);
-                currentFileInfo.FilePrefix = currentFileInfo.FileName.Split('_')[0];
-                string fileIndex = currentFileInfo.FileName.Split(new char[]{ '_', '.'})[1];
+                currentFileInfo.FilePrefix = currentFileInfo.FileName.Substring(0, 3);
+                //currentFileInfo.FilePrefix = currentFileInfo.FileName.Split('_')[0];
+                string fileIndex = currentFileInfo.FileName.Substring(3, 5);// currentFileInfo.FileName.Split(new char[]{ '_', '.'})[1];
                 if(!Int32.TryParse(fileIndex, out currentFileInfo.FileIndex))
                 {
                     currentFileInfo.FileIndex = 0;
@@ -248,7 +249,7 @@ namespace FfmpegUtil
             string command = "ffmpeg";
             command += " -r " + numericUpDown1.Value.ToString();
             command += " -start_number " + timelapseFileListStartIndex;
-            command += " -i " + "\"" + homeDirectory + "\\" + timelapseFileListPrefix + "_%04d.jpg\"";
+            command += " -i " + "\"" + homeDirectory + "\\" + timelapseFileListPrefix + "%05d.JPG\"";
             // Change pixel format to allow importing into premiere
             command += " -pix_fmt yuv420p";
             // Video filters
